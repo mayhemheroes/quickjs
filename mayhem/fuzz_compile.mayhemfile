@@ -1,0 +1,4 @@
+project: PROJECT
+target: fuzz_compile
+cmds:
+- cmd: /out/fuzz_compile
