@@ -36,9 +36,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         rt = JS_NewRuntime();
         // 64 Mo
         JS_SetMemoryLimit(rt, 0x4000000);
-        //TODO JS_SetMaxStackSize ?
         ctx = JS_NewContextRaw(rt);
-        JS_SetModuleLoaderFunc(rt, NULL, js_module_loader, NULL);
         JS_AddIntrinsicBaseObjects(ctx);
         JS_AddIntrinsicDate(ctx);
         JS_AddIntrinsicEval(ctx);
@@ -49,7 +47,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         JS_AddIntrinsicMapSet(ctx);
         JS_AddIntrinsicTypedArrays(ctx);
         JS_AddIntrinsicPromise(ctx);
-        JS_AddIntrinsicBigInt(ctx);
         JS_SetInterruptHandler(JS_GetRuntime(ctx), interrupt_handler, NULL);
         js_std_add_helpers(ctx, 0, NULL);
         initialized = 1;
@@ -61,7 +58,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         }
         JSValue obj;
         obj = JS_Eval(ctx, (const char *)Data, Size-1, "<none>", JS_EVAL_FLAG_COMPILE_ONLY | JS_EVAL_TYPE_GLOBAL | JS_EVAL_TYPE_MODULE);
-        //TODO target with JS_ParseJSON
         if (JS_IsException(obj)) {
             return 0;
         }
@@ -77,10 +73,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
             return 0;
         }
         nbinterrupts = 0;
-        /* this is based on
-         * js_std_eval_binary(ctx, bytecode, bytecode_size, 0);
-         * modified so as not to exit on JS exception
-         */
         JSValue val;
         if (JS_VALUE_GET_TAG(obj) == JS_TAG_MODULE) {
             if (JS_ResolveModule(ctx, obj) < 0) {
