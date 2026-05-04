@@ -35,9 +35,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         rt = JS_NewRuntime();
         // 64 Mo
         JS_SetMemoryLimit(rt, 0x4000000);
-        //TODO JS_SetMaxStackSize ?
         ctx = JS_NewContextRaw(rt);
-        JS_SetModuleLoaderFunc(rt, NULL, js_module_loader, NULL);
         JS_AddIntrinsicBaseObjects(ctx);
         JS_AddIntrinsicDate(ctx);
         JS_AddIntrinsicEval(ctx);
@@ -48,21 +46,17 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         JS_AddIntrinsicMapSet(ctx);
         JS_AddIntrinsicTypedArrays(ctx);
         JS_AddIntrinsicPromise(ctx);
-        JS_AddIntrinsicBigInt(ctx);
         JS_SetInterruptHandler(JS_GetRuntime(ctx), interrupt_handler, NULL);
         js_std_add_helpers(ctx, 0, NULL);
         initialized = 1;
     }
 
     if (Size > 0) {
-        //is it more efficient to malloc(Size+1) and memcpy ?
         if (Data[Size-1] != 0) {
             return 0;
         }
         nbinterrupts = 0;
-        //the final 0 does not count (as in strlen)
         JSValue val = JS_Eval(ctx, (const char *)Data, Size-1, "<none>", JS_EVAL_TYPE_GLOBAL);
-        //TODO targets with JS_ParseJSON, JS_ReadObject
         if (!JS_IsException(val)) {
             js_std_loop(ctx);
             JS_FreeValue(ctx, val);
