@@ -28,5 +28,5 @@ cd ..
 FUZZ_TARGETS="fuzz_eval fuzz_compile fuzz_regexp"
 for f in $FUZZ_TARGETS; do
     $CC $CFLAGS -Iquickjs -c $f.c -o $f.o
-    $CXX $CXXFLAGS $f.o -o $OUT/$f quickjs/libquickjs.a $LIB_FUZZING_ENGINE
+    $CXX $CXXFLAGS -fuse-ld=lld $f.o -o $OUT/$f quickjs/libquickjs.a $LIB_FUZZING_ENGINE
 done
